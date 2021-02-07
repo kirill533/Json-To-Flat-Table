@@ -1,13 +1,18 @@
 {
-    "name": "galbar/jsonpath",
-    "description": "JSONPath implementation for querying and updating JSON objects",
+    "name": "bim/jsonpath",
+    "description": "JSONPath implementation for querying and updating JSON objects with support for json flattening into a table",
     "type": "library",
+    "version": "0.1.0",
     "keywords": ["jsonpath", "json", "path"],
     "license": "Apache-2.0",
     "authors": [
         {
             "name": "Alessio Linares",
             "email": "alessio@alessio.cc",
+            "role": "Software Engineer"
+        },
+        {
+            "name": "Kyrylo Kostiukov",
             "role": "Software Engineer"
         }
     ],
