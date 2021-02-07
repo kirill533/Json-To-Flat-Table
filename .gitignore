@@ -2,3 +2,4 @@ vendor
 docs/*
 cache
 composer.lock
+/.idea/
