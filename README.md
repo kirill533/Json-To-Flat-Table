@@ -1,4 +1,4 @@
-JsonPath
+JsonPath with support for Flat Table Generation
 ========
 [![Build Status](https://travis-ci.org/Galbar/JsonPath-PHP.svg)](https://travis-ci.org/Galbar/JsonPath-PHP)
 [![Coverage Status](https://coveralls.io/repos/Galbar/JsonPath-PHP/badge.svg?branch=master&service=github)](https://coveralls.io/github/Galbar/JsonPath-PHP?branch=master)
@@ -17,213 +17,117 @@ On top of this it implements some extended features:
 Features
 ========
 This implementation has the following features:
-* Object oriented implementation.
-* __Get__, __set__ and __add__ operations.
-* Magic methods implemented:
-    * `__get`: `$obj->{'$...'}`.
-    * `__set`: `$obj->{'$...'} = $val`.
-    * `__toString`: `echo $obj` prints the json representation of the JsonObject.
-* Not using `eval()`.
-
-Usage
-=====
-Add the following code to your composer.json. Use `dev-master` for the bleeding edge version or [![Latest Stable Version](https://poser.pugx.org/galbar/jsonpath/v/stable)](https://packagist.org/packages/galbar/jsonpath)
-
-```
-"require": {
-    "galbar/jsonpath": "dev-master"
-}
-```
-
-Run `composer update`.
-
-In every file you use it add:  
-```
-use JsonPath\JsonObject;
-```
-
-Now you can create an instance of JsonObject and use it:
-```
-// $json can be a string containing json, a PHP array, a PHP object or null.
-// If $json is null (or not present) the JsonObject will be empty.
-$jsonObject = new JsonObject();
-// or
-$jsonObject = new JsonObject($json);
-
-// get
-$obj->get($jsonPath);
-$obj->{'$.json.path'};
-
-// set
-$obj->set($jsonPath, $value);
-$obj->{'$.json.path'} = $value;
-
-// get the json representation
-$obj->getJson();
-$str = (string)$obj;
-echo $obj;
-
-// get the PHP array representation
-$obj->getValue();
-
-// add values
-$obj->add($jsonPath, $value[, $field]);
-
-// remove values
-$obj->remove($jsonPath, $field);
-```
-
-SmartGet
---------
-
-When creating a new instance of JsonObject, you can pass a second parameter to the constructor. 
-This sets the behaviour of the instance to use SmartGet.
-
-What SmartGet does is to determine if the given JsonPath branches at some point, if it does it behaves as usual; 
-otherwise, it will directly return the value pointed by the given path (not the array containing it).
-
-GetJsonObjects
---------------
-
-Sometimes you need to access multiple values of a subobject that has a long prefix (p.e. `$.a.very.long.prefix.for.[*].object`), in this case you would first get said object 
-and make a JsonObject of it and then access its properties.
-
-Now if you want to edit the object (set or add values) and want these changes to affect the original object, the way of doing this is by using 
-`JsonObject::getJsonObjects($jsonpath)`. This method works the same way get does, but it will return the results as JsonObject instances containing a reference to the value in the source JsonObject.
-
-JsonPath Language
-=================
-This library implements the following specification:
-```
-var_name    = [\w\_\$^\d][\w\-\$]*
-number      = ([0-9]+(\.[0-9]*) | ([0-9]*\.[0-9]+))
-string      = ('\''.*?'\'' | '"'.*?'"')
-boolean     = ('true' | 'false')
-regpattern  = '/'.*?'/'
-null        = 'null'
-index       = -?[0-9]+
-
-jsonpath    = '$' operator*
-childpath   = '@' operator*
-
-operator    = (childname | childfilter | recursive) operator*
-
-childname   = '.' (var_name | '*')
-recursive   = '..' (var_name | '*')
-childfilter = '[' ('*' | namelist | indexlist | arrayslice | filterexpr) ']'
-
-namelist    = var_name (',' (var_name | '\'' .*? '\'' | '"' .*? '"'))*
-indexlist   = index (',' index)*
-arrayslice  = index? ':' index? ':' index?
-filterexpr  = '?(' ors ')'
-
-ors         = ands (' or ' ands)*
-ands        = expr (' and ' expr)*
-expr        = 'not'? (value | comp)
-comp        = value ('==' | '!=' | '<' | '>' | '<=' | '>=' | '=~') value
-value       = (jsonpath | childpath | number | string | boolean | regpattern | null | length)
-length      = (jsonpath | childpath) '.length'
-```
-
-__Limitations__ on the specification:  
-* The jsonpath inside _value_ cannot contain `or`, `and` or any comparator.
-* Jsonpaths in _value_ return the first element of the set or false if no result.
-* Boolean operations can't be grouped with parethesis.
-* `and`s are run before `or`s. That means that `a and 1 = b or c != d` is the same
-as `(a and 1) or (c != d)`
-
-__The `.length` operator__ can be used to:
-* Get the number of childs a node in the JsonObject has: `$..*[?(@.length > 3)]`
-* Filter for nodes that have childs: `$..*[?(@.length)]`
-* Or filter for nodes that don't have childs (leaves): `$..*[?(not @.length)]`
-* Check the length of a string: `$.path.to[?(@.a.string.length > 10)]`
-* Get the length of a string: `$.path.to.field.length`
-* Get the length of an array: `$.path.to.array.length`
-* Get the length of each array inside an array of arrays: `$.path.to.array[*].array[*].length`
-* Get the length of each string inside an array of strings: `$.path.to.array[*].array[*].key.length`
-
-__The comparators__:  
-`==`, `!=`, `<`, `>`, `<=`, `>=` do what expected (compare by type and value).  
-`=~` is a regex comparator, matches the left operand with the pattern in the right operand. The value on the left must be a _string_ and on 
-the right _regpattern_. Other wise returns `false`.
+* Convert json tree into a flat table using the set of jsonpath stings.
 
 JsonPath Example
 ================
 Consider the following json:
 ```
 { "store": {
+    "name":"My Store",
     "book": [
       { "category": "reference",
         "author": "Nigel Rees",
         "title": "Sayings of the Century",
         "price": 8.95,
-        "available": true
+        "available": true,
+        "authors": ["Nigel Rees"]
       },
       { "category": "fiction",
         "author": "Evelyn Waugh",
         "title": "Sword of Honour",
         "price": 12.99,
-        "available": false
+        "available": false,
+        "authors": []
       },
       { "category": "fiction",
         "author": "Herman Melville",
         "title": "Moby Dick",
         "isbn": "0-553-21311-3",
         "price": 8.99,
-        "available": true
+        "available": true,
+        "authors": ["Nigel Rees"]
       },
       { "category": "fiction",
         "author": "J. R. R. Tolkien",
         "title": "The Lord of the Rings",
         "isbn": "0-395-19395-8",
         "price": 22.99,
-        "available": false
+        "available": false,
+        "authors": ["Evelyn Waugh", "J. R. R. Tolkien"]
       }
     ],
     "bicycle": {
       "color": "red",
       "price": 19.95,
-      "available": true
-    }
+      "available": true,
+      "model": null,
+      "sku-number": "BCCLE-0001-RD"
+    },
+    "bicycleSet": [{
+      "color": "red",
+      "price": 19.95,
+      "available": true,
+      "model": null,
+      "sku-number": "BCCLE-0001-RD"
+    },{
+      "color": "green",
+      "price": 19.75,
+      "available": false,
+      "model": null,
+      "sku-number": "RCADF-0002-CQ"
+    }]
   },
   "authors": [
     "Nigel Rees",
     "Evelyn Waugh",
     "Herman Melville",
     "J. R. R. Tolkien"
+  ],
+  "Bike models": [
+    1,
+    2,
+    3
   ]
 }
 ```
 
-JsonPath | Result
----------|--------
-`$.store.bicycle.price` | The price of the bicycle.
-`$.store.book[*]` | All books.
-`$.store.book[1,3]` | The second and fourth book.
-`$.store.book[1:3]` | From the second book to the third.
-`$.store.book[:3]` | From the first book to the third.
-`$.store.book[x:y:z]` | Books from x to y with a step of z.
-`$..book[?(@.category == 'fiction')]` | All books with category == 'fiction'.
-`$..*[?(@.available == true)].price` | All prices of available products.
-`$..book[?(@.price < 10)].title` | The title of all books with price lower than 10.
-`$..book[?(@.author==$.authors[3])]` | All books by "J. R. R. Tolkien"
-`$[store]` | The store.
-`$['store']` | The store.
-`$..book[*][title, 'category', "author"]` | title, category and author of all books.
+# JsonPath => Result
 
-Test
+
+`[$.store.bicycle.price]` 
+
+| |
+|---|
+|19.95|
+
+`[$.store.name,$.store.bicycle.price,$.store.bicycle.sku-number]`
+
+| | | |
+|---|---|---|
+|My Store|19.95|BCCLE-0001-RD|
+
+`[$.store.book[*].price,$.store.book[*].price,$.store.book[*].authors[*],$.store.book[*].title,$.store.name]`
+
+
+| | | | | |
+|---|---|---|---|---|
+|8.95|8.95|Nigel Rees|Sayings of the Century|My Store|
+|12.99|12.99|null|Sword of Honour|My Store|
+|8.99|8.99|Nigel Rees|Moby Dick|My Store|
+|22.99|22.99|Evelyn Waugh|The Lord of the Rings|My Store|
+|22.99|22.99|J. R. R. Tolkien|The Lord of the Rings|My Store|
+
+
+Usage
 ====
-To run tests, from the project root folder:  
-`php app/test.php <jsonpath> [<file to json file>]`
 
-If no json file is given it defaults to the json object described previously in this file.
+```php
 
-For example:  
-`php app/test.php "$..*[?(@.category == 'fiction' and @.price < 10 or @.color == \"red\")].price"`  
-Result should be:  
-`[19.95,8.99]`
+$json = '{... your json as string ...}';
+$jsonPath = '[$.your.jsonpath.1,$.your.jsonpath.2]';
 
-Docs
-====
-To generate the docs, from the project root folder:  
-`php vendor/bin/sami.php update app/docgen.php`
+$jsonObject = new JsonObject($json);
+$result = $jsonObject->getTable($jsonPath);
+
+```
