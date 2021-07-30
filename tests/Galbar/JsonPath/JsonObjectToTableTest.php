@@ -180,6 +180,36 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
                     array(22.99, 22.99, "J. R. R. Tolkien", "The Lord of the Rings", "My Store")
                 ),
                 "[$.store.book[*].price,$.store.book[*].price,$.store.book[*].authors[*],$.store.book[*].title,$.store.name]"
+            ),
+            array(
+                array(
+                    array(null,19.95, null, null)
+                ),
+                "[$.store.bicycle.unknown_grand_parent_element.unknown_parent_element.unknown_element,$.store.bicycle.price,$.store.bicycle.unknown_parent_element.unknown_element,$.store.bicycle.unknown_parent_element.unknown_element2]"
+            ),
+            array(
+                array(
+                    array(19.95, null)
+                ),
+                "[$.store.bicycle.price,$.store.bicycle.unknown_parent_element.unknown_element]"
+            ),
+            array(
+                array(
+                    array(19.95, null)
+                ),
+                "[$.store.bicycle.price,$.store.bicycle.unknown_element]"
+            ),
+            array(
+                array(
+                    array(null, 19.95)
+                ),
+                "[$.store.bicycle.unknown_element,$.store.bicycle.price]"
+            ),
+            array(
+                array(
+                    array(null)
+                ),
+                "[$.store.bicycle.unknown_element]"
             )
         );
     }

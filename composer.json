@@ -2,7 +2,7 @@
     "name": "bim/json-to-table",
     "description": "JSONPath implementation for querying and updating JSON objects with support for json flattening into a table",
     "type": "library",
-    "version": "2.1",
+    "version": "2.2",
     "keywords": ["jsonpath", "json", "path"],
     "license": "Apache-2.0",
     "authors": [

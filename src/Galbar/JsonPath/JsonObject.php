@@ -867,7 +867,8 @@ class JsonObject
             $currentPath = $currentPathOrig . $path;
             $elements = $this->getReal($jsonObject,  '$'.$path);
 
-            if (($elements === false || count($elements) === 0) && !empty($currentRow)) {
+            if (($elements === false || count($elements) === 0)) {
+                // fill in the result with nulls
                 foreach ($sortKeys as $sortKey => $keyPath) {
                     if ($keyPath == $currentPath) {
                         $currentRow[$sortKey] = null;
@@ -876,6 +877,22 @@ class JsonObject
                         }
                     }
                 }
+                if (!empty($subTree)) {
+                    // process also sub-nodes and fill them with nulls too
+                    $subTreeNodes = $this->getAllSubNodes($subTree);
+                    foreach ($subTreeNodes as $subNode) {
+                        $currentSubPath = $currentPath . $subNode;
+                        foreach ($sortKeys as $sortKey => $keyPath) {
+                            if ($keyPath == $currentSubPath) {
+                                $currentRow[$sortKey] = null;
+                                if (count($currentRow) == $rowSize) {
+                                    $rows[] = $currentRow;
+                                }
+                            }
+                        }
+                    }
+                }
+
             } else {
                 $currentRowIteration = $currentRow;
                 foreach ($elements as $element) {
@@ -916,5 +933,21 @@ class JsonObject
         array_flip($sortKeys);
         asort($sortKeys);
         return $sortKeys;
+    }
+
+    private function getAllSubNodes($subTree)
+    {
+        $nodes = [];
+        foreach ($subTree as $node => $nextSubTree) {
+            if (empty($nextSubTree)) {
+                $nodes[] = $node;
+            } else {
+                $childNodes = $this->getAllSubNodes($nextSubTree);
+                foreach ($childNodes as $childNode) {
+                    $nodes[] = $node . $childNode;
+                }
+            }
+        }
+        return $nodes;
     }
 }
