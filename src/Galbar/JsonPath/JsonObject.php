@@ -858,6 +858,12 @@ class JsonObject
     /**
      * @param $jsonObject
      * @param array $pathTree
+     * @param $rows
+     * @param $rowSize
+     * @param $sortKeys
+     * @param array $currentRow
+     * @param string $currentPath
+     * @return array|null - current row if it was not complete by the end of the iterations
      * @throws InvalidJsonPathException
      */
     private function iteratePathTree(&$jsonObject, array $pathTree, &$rows, $rowSize, $sortKeys, $currentRow = array(), $currentPath = '')
@@ -910,14 +916,19 @@ class JsonObject
                         }
                     } else {
                         // sub nodes
-                        $this->iteratePathTree($element, $subTree, $rows, $rowSize, $sortKeys, $currentRow, $currentPath);
+                        $res = $this->iteratePathTree($element, $subTree, $rows, $rowSize, $sortKeys, $currentRow, $currentPath);
+                        if (!empty($res)) {
+                            $currentRowIteration = $res;
+                        }
                     }
                 }
                 $currentRow = $currentRowIteration;
             }
-
-
         }
+        if (!empty($currentRow) && count($currentRow) < $rowSize) {
+            return $currentRow;
+        }
+        return null;
     }
 
     private function getPathSortKeys(array $jsonPaths)

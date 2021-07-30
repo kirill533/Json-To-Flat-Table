@@ -210,6 +210,12 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
                     array(null)
                 ),
                 "[$.store.bicycle.unknown_element]"
+            ),
+            array(
+                array(
+                    array(null, 19.95)
+                ),
+                "[$.store.bicycleSet.unknown_grand_parent_element.unknown_parent_element.unknown_element,$.store.bicycle.price]"
             )
         );
     }
