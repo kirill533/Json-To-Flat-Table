@@ -937,13 +937,21 @@ class JsonObject
     private function getPathSortKeys(array $jsonPaths)
     {
         $shortPaths = [];
-        foreach ($jsonPaths as $jsonPath) {
+        foreach ($jsonPaths as $key => $jsonPath) {
+            $listCount = substr_count($jsonPath, '[*]');
             $array = $this->getPathTree('$'.$jsonPath, true);
             array_pop($array);
-            $shortPaths[] = implode('', $array);
+            $shortPaths[$listCount][$key] = implode('', $array);
         }
-        asort($shortPaths);
-        $sortKeys = array_keys($shortPaths);
+        ksort($shortPaths);
+        $resultedSort = [];
+        $resultedKeys = [];
+        foreach ($shortPaths as $listCount => $items) {
+            asort($items);
+            $resultedSort = array_merge($resultedSort, array_values($items));
+            $resultedKeys = array_merge($resultedKeys, array_keys($items));
+        }
+        $sortKeys = $resultedKeys;
         array_flip($sortKeys);
         asort($sortKeys);
         return $sortKeys;

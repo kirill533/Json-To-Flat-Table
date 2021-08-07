@@ -62,6 +62,9 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
         "authors": ["Evelyn Waugh", "J. R. R. Tolkien"]
       }
     ],
+    "x_parameters": {
+      "x_id": "100"
+    },
     "bicycle": {
       "color": "red",
       "price": 19.95,
@@ -120,6 +123,24 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
     public function providerForTestGet()
     {
         return array(
+            array(
+                array(
+                    array(100, 8.95),
+                    array(100, 12.99),
+                    array(100, 8.99),
+                    array(100, 22.99)
+                ),
+                "[$.store.x_parameters.x_id,$.store.book[*].price]"
+            ),
+            array(
+                array(
+                    array(8.95, 100),
+                    array(12.99, 100),
+                    array(8.99, 100),
+                    array(22.99, 100)
+                ),
+                "[$.store.book[*].price,$.store.x_parameters.x_id]"
+            ),
             array(
                 array(
                     array(19.95)
