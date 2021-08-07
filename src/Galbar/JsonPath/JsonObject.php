@@ -879,6 +879,7 @@ class JsonObject
                     if ($keyPath == $currentPath) {
                         $currentRow[$sortKey] = null;
                         if (count($currentRow) == $rowSize) {
+                            ksort($currentRow);
                             $rows[] = $currentRow;
                         }
                     }
@@ -892,6 +893,7 @@ class JsonObject
                             if ($keyPath == $currentSubPath) {
                                 $currentRow[$sortKey] = null;
                                 if (count($currentRow) == $rowSize) {
+                                    ksort($currentRow);
                                     $rows[] = $currentRow;
                                 }
                             }
@@ -909,6 +911,7 @@ class JsonObject
                             if ($keyPath == $currentPath) {
                                 $currentRowIteration[$sortKey] = $element;
                                 if (count($currentRowIteration) == $rowSize) {
+                                    ksort($currentRowIteration);
                                     $rows[] = $currentRowIteration;
                                 }
 
