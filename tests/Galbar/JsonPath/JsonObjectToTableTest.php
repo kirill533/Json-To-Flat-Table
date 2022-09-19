@@ -77,13 +77,15 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
       "price": 19.95,
       "available": true,
       "model": null,
-      "sku-number": "BCCLE-0001-RD"
+      "sku-number": "BCCLE-0001-RD",
+      "mixed-type-value": "1"
     },{
       "color": "green",
       "price": 19.75,
       "available": false,
       "model": null,
-      "sku-number": "RCADF-0002-CQ"
+      "sku-number": "RCADF-0002-CQ",
+      "mixed-type-value": ["1"]
     }]
   },
   "authors": [
@@ -237,6 +239,13 @@ class JsonObjectToTableTest extends \PHPUnit_Framework_TestCase
                     array(null, 19.95)
                 ),
                 "[$.store.bicycleSet.unknown_grand_parent_element.unknown_parent_element.unknown_element,$.store.bicycle.price]"
+            ),
+            array(
+                array(
+                    array("1"),
+                    array("1")
+                ),
+                "[$.store.bicycleSet[*].mixed-type-value]"
             )
         );
     }

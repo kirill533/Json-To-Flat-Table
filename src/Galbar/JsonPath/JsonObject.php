@@ -879,7 +879,7 @@ class JsonObject
                     if ($keyPath == $currentPath) {
                         $currentRow[$sortKey] = null;
                         if (count($currentRow) == $rowSize) {
-                            ksort($currentRow);
+                            $this->prepareFlatRowData($currentRow);
                             $rows[] = $currentRow;
                         }
                     }
@@ -893,7 +893,7 @@ class JsonObject
                             if ($keyPath == $currentSubPath) {
                                 $currentRow[$sortKey] = null;
                                 if (count($currentRow) == $rowSize) {
-                                    ksort($currentRow);
+                                    $this->prepareFlatRowData($currentRow);
                                     $rows[] = $currentRow;
                                 }
                             }
@@ -911,7 +911,7 @@ class JsonObject
                             if ($keyPath == $currentPath) {
                                 $currentRowIteration[$sortKey] = $element;
                                 if (count($currentRowIteration) == $rowSize) {
-                                    ksort($currentRowIteration);
+                                    $this->prepareFlatRowData($currentRowIteration);
                                     $rows[] = $currentRowIteration;
                                 }
 
@@ -971,5 +971,20 @@ class JsonObject
             }
         }
         return $nodes;
+    }
+
+    protected function prepareFlatRowData(array &$currentRow)
+    {
+        ksort($currentRow);
+        $currentRow = array_map(array($this, "arrayToSingleValue"), $currentRow);
+    }
+
+    public function arrayToSingleValue($val)
+    {
+        $limit = 100;
+        while (is_array($val) || $limit-- < 0) {
+            $val = array_shift($val);
+        }
+        return $val;
     }
 }
